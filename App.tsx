@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
-import { HashRouter, Routes, Route, Link, useParams, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { ideas } from './data';
 import { Category } from './types';
 import { Search, ArrowRight, Briefcase, ArrowLeft, Monitor, Wrench, Calculator, Palette, FileText, ChevronUp, Copy, Check, Heart, Moon, Sun } from 'lucide-react';
@@ -193,13 +193,31 @@ const CategoryBadge: React.FC<{ category: string, isActive?: boolean, onClick?: 
 // --- Page d'Accueil ---
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState<string>("Toutes");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filterCategory = searchParams.get('category') || "Toutes";
+  
   const [visibleCount, setVisibleCount] = useState(12);
   const { favorites } = useFavorites();
   
   useEffect(() => {
     setVisibleCount(12);
   }, [searchTerm, filterCategory]);
+
+  const setFilterCategory = (cat: string) => {
+    if (cat === "Toutes") {
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('category');
+        return newParams;
+      });
+    } else {
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('category', cat);
+        return newParams;
+      });
+    }
+  };
 
   const fuse = useMemo(() => new Fuse(ideas, {
     keys: [
@@ -272,6 +290,26 @@ const Home = () => {
                 </div>
                 
                 <ThemeToggle />
+                
+                {/* Lien direct Favoris dans le header principal */}
+                <button
+                    onClick={() => setFilterCategory("Favoris")}
+                    className={`p-2.5 rounded-xl transition-all active:scale-95 ${
+                        filterCategory === "Favoris"
+                        ? 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400' 
+                        : 'text-gray-500 bg-gray-100/50 hover:bg-red-50 hover:text-red-500 dark:text-slate-400 dark:bg-slate-800/50 dark:hover:bg-red-900/20 dark:hover:text-red-400'
+                    }`}
+                    title="Mes Favoris"
+                >
+                    <div className="relative">
+                        <Heart className={`w-5 h-5 ${filterCategory === "Favoris" ? 'fill-current' : ''}`} />
+                        {favorites.length > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
+                                {favorites.length}
+                            </span>
+                        )}
+                    </div>
+                </button>
             </div>
           </div>
           
@@ -316,23 +354,23 @@ const Home = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
         {filteredIdeas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
+          <div className="flex flex-col items-center justify-center py-32 text-center animate-bounce-in">
             <div className="w-20 h-20 bg-gray-100 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6 text-gray-300 dark:text-slate-600">
                {filterCategory === "Favoris" ? <Heart className="w-10 h-10" /> : <Search className="w-10 h-10" />}
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {filterCategory === "Favoris" ? "Aucun favori" : "Aucun résultat"}
+              {filterCategory === "Favoris" ? "Aucun favori pour l'instant" : "Aucun résultat"}
             </h3>
             <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-8 text-sm">
               {filterCategory === "Favoris" 
-                ? "Cliquez sur le cœur dans les fiches pour sauvegarder vos idées préférées." 
+                ? "Cliquez sur le cœur dans les fiches pour construire votre liste de projets." 
                 : "Essayez d'autres mots-clés."}
             </p>
             <button 
               onClick={() => {setSearchTerm(""); setFilterCategory("Toutes");}}
               className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm transition-colors shadow-lg shadow-indigo-500/20"
             >
-              Voir toutes les idées
+              Découvrir les idées
             </button>
           </div>
         ) : (
@@ -344,7 +382,7 @@ const Home = () => {
                     <Link to={`/activity/${idea.id}`} key={idea.id} className="group flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-100 dark:hover:border-slate-700 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden h-full relative">
                         {isFav && (
                           <div className="absolute top-4 right-4 z-10">
-                            <Heart className="w-5 h-5 text-red-500 fill-current drop-shadow-md animate-pulse-once" />
+                            <Heart className="w-5 h-5 text-red-500 fill-current drop-shadow-md animate-bounce-in" />
                           </div>
                         )}
                         
@@ -421,18 +459,29 @@ const ActivityDetail = () => {
                 Retour
             </Link>
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+                 {/* Nouveau lien direct vers les favoris depuis la page détail */}
+                 {favorites.length > 0 && (
+                    <Link
+                        to="/?category=Favoris"
+                        className="hidden sm:flex items-center text-xs font-bold text-gray-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 mr-2 transition-colors"
+                    >
+                        Mes Favoris ({favorites.length})
+                    </Link>
+                 )}
+
                  <button
                     onClick={() => toggleFavorite(idea.id)}
-                    className={`p-2 rounded-full transition-all duration-200 ${
+                    className={`p-2 rounded-full transition-all duration-200 flex items-center gap-2 ${
                         isFavorite 
                         ? 'bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40' 
                         : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600 dark:hover:bg-slate-800 dark:text-slate-500 dark:hover:text-slate-300'
                     }`}
                     title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
                  >
-                    <Heart className={`w-5 h-5 ${isFavorite ? "fill-current" : ""}`} />
+                    <Heart className={`w-5 h-5 ${isFavorite ? "fill-current animate-bounce-in" : ""}`} />
                  </button>
+                 
                  <div className="h-4 w-px bg-gray-200 dark:bg-slate-800 mx-2"></div>
                  <CopyButton text={window.location.href} />
                  <div className="ml-2">
@@ -552,6 +601,8 @@ const App = () => {
 
   const toggleTheme = () => setIsDark(prev => !prev);
 
+  // --- PERSISTANCE DES FAVORIS VIA LOCALSTORAGE ---
+  // On charge les favoris depuis le localStorage au démarrage
   const [favorites, setFavorites] = useState<number[]>(() => {
     try {
       const saved = localStorage.getItem('businessIdeasFavorites');
@@ -561,6 +612,7 @@ const App = () => {
     }
   });
 
+  // On sauvegarde dans le localStorage à chaque changement de 'favorites'
   useEffect(() => {
     localStorage.setItem('businessIdeasFavorites', JSON.stringify(favorites));
   }, [favorites]);
