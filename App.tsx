@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { HashRouter, Routes, Route, Link, useParams, useLocation } from 'react-router-dom';
 import { ideas } from './data';
-import { BusinessIdea, Category } from './types';
-import { Search, ArrowRight, DollarSign, Briefcase, ArrowLeft, Monitor, Wrench, Calculator, Palette, FileText, CheckCircle, Sparkles, ChevronUp, Copy, Check, Filter, Scale, Heart, Moon, Sun } from 'lucide-react';
+import { Category } from './types';
+import { Search, ArrowRight, Briefcase, ArrowLeft, Monitor, Wrench, Calculator, Palette, FileText, ChevronUp, Copy, Check, Heart, Moon, Sun } from 'lucide-react';
 import Fuse from 'fuse.js';
 
 // --- Gestion du Thème (Dark Mode) ---
@@ -196,7 +196,6 @@ const Home = () => {
   const [filterCategory, setFilterCategory] = useState<string>("Toutes");
   const [visibleCount, setVisibleCount] = useState(12);
   const { favorites } = useFavorites();
-  const { isDark } = useTheme();
   
   useEffect(() => {
     setVisibleCount(12);
@@ -406,7 +405,6 @@ const ActivityDetail = () => {
   const { id } = useParams();
   const idea = ideas.find(i => i.id === Number(id));
   const { favorites, toggleFavorite } = useFavorites();
-  const { isDark } = useTheme();
 
   if (!idea) return <div className="min-h-screen flex items-center justify-center text-xl text-gray-500 dark:text-slate-400 dark:bg-slate-950">Activité non trouvée.</div>;
 
