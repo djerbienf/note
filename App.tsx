@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { HashRouter, Routes, Route, Link, useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { ideas } from './data';
 import { Category } from './types';
-import { Search, ArrowRight, Briefcase, ArrowLeft, Monitor, Wrench, Calculator, Palette, FileText, ChevronUp, Copy, Check, Heart, Moon, Sun } from 'lucide-react';
+import { Search, ArrowRight, Briefcase, ArrowLeft, Monitor, Wrench, Calculator, Palette, FileText, ChevronUp, Copy, Check, Heart, Moon, Sun, Trash2 } from 'lucide-react';
 import Fuse from 'fuse.js';
 
 // --- Gestion du Thème (Dark Mode) ---
@@ -197,7 +197,7 @@ const Home = () => {
   const filterCategory = searchParams.get('category') || "Toutes";
   
   const [visibleCount, setVisibleCount] = useState(12);
-  const { favorites } = useFavorites();
+  const { favorites, toggleFavorite } = useFavorites();
   
   useEffect(() => {
     setVisibleCount(12);
@@ -380,11 +380,21 @@ const Home = () => {
                   const isFav = favorites.includes(idea.id);
                   return (
                     <Link to={`/activity/${idea.id}`} key={idea.id} className="group flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-100 dark:hover:border-slate-700 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden h-full relative">
-                        {isFav && (
-                          <div className="absolute top-4 right-4 z-10">
-                            <Heart className="w-5 h-5 text-red-500 fill-current drop-shadow-md animate-bounce-in" />
-                          </div>
-                        )}
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toggleFavorite(idea.id);
+                            }}
+                            className={`absolute top-3 right-3 z-20 p-2 rounded-full transition-all duration-200 shadow-sm ${
+                                isFav 
+                                ? 'bg-white dark:bg-slate-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-100' 
+                                : 'bg-white/80 dark:bg-slate-800/80 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white dark:hover:bg-slate-800 opacity-0 group-hover:opacity-100'
+                            }`}
+                            title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+                        >
+                            <Heart className={`w-5 h-5 ${isFav ? "fill-current" : ""}`} />
+                        </button>
                         
                         <div className="p-6 flex-grow flex flex-col">
                             <div className="flex justify-between items-start mb-4">
