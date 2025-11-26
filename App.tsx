@@ -378,15 +378,16 @@ const Home = () => {
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {displayedIdeas.map((idea) => {
                   const isFav = favorites.includes(idea.id);
+                  // CHANGEMENT MAJEUR ICI : Remplacement de <Link> par <div> pour le conteneur principal
                   return (
-                    <Link to={`/activity/${idea.id}`} key={idea.id} className="group flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-100 dark:hover:border-slate-700 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden h-full relative">
+                    <div key={idea.id} className="group flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-100 dark:hover:border-slate-700 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden h-full relative">
+                        {/* Le bouton est maintenant frère (sibling) du lien, pas enfant */}
                         <button
                             onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
+                                e.stopPropagation(); // Arrête la propagation, même si la div parente ne clique pas, bonne pratique
                                 toggleFavorite(idea.id);
                             }}
-                            className={`absolute top-3 right-3 z-20 p-2 rounded-full transition-all duration-200 shadow-sm ${
+                            className={`absolute top-3 right-3 z-20 p-2 rounded-full transition-all duration-200 shadow-sm cursor-pointer ${
                                 isFav 
                                 ? 'bg-white dark:bg-slate-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-100' 
                                 : 'bg-white/80 dark:bg-slate-800/80 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white dark:hover:bg-slate-800 opacity-0 group-hover:opacity-100'
@@ -396,36 +397,39 @@ const Home = () => {
                             <Heart className={`w-5 h-5 ${isFav ? "fill-current" : ""}`} />
                         </button>
                         
-                        <div className="p-6 flex-grow flex flex-col">
-                            <div className="flex justify-between items-start mb-4">
-                                <span className="text-[10px] font-black tracking-widest text-indigo-500/50 dark:text-indigo-400/50 uppercase">#{idea.id.toString().padStart(3, '0')}</span>
-                                <CategoryIcon category={idea.category} className="w-5 h-5 text-gray-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
-                            </div>
-                            
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">
-                                {idea.title}
-                            </h3>
+                        {/* Le lien englobe le contenu de la carte */}
+                        <Link to={`/activity/${idea.id}`} className="flex-grow flex flex-col h-full w-full text-left">
+                            <div className="p-6 flex-grow flex flex-col">
+                                <div className="flex justify-between items-start mb-4">
+                                    <span className="text-[10px] font-black tracking-widest text-indigo-500/50 dark:text-indigo-400/50 uppercase">#{idea.id.toString().padStart(3, '0')}</span>
+                                    <CategoryIcon category={idea.category} className="w-5 h-5 text-gray-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+                                </div>
+                                
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">
+                                    {idea.title}
+                                </h3>
 
-                            <div className="mb-4">
-                                <span className="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide bg-gray-50 text-gray-500 border border-gray-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 group-hover:bg-indigo-50 group-hover:text-indigo-600 group-hover:border-indigo-100 dark:group-hover:bg-indigo-900/30 dark:group-hover:text-indigo-300 dark:group-hover:border-indigo-800 transition-colors">
-                                    {idea.category}
-                                </span>
+                                <div className="mb-4">
+                                    <span className="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide bg-gray-50 text-gray-500 border border-gray-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 group-hover:bg-indigo-50 group-hover:text-indigo-600 group-hover:border-indigo-100 dark:group-hover:bg-indigo-900/30 dark:group-hover:text-indigo-300 dark:group-hover:border-indigo-800 transition-colors">
+                                        {idea.category}
+                                    </span>
+                                </div>
+                                
+                                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed flex-grow font-medium">
+                                    {idea.description}
+                                </p>
                             </div>
-                            
-                            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed flex-grow font-medium">
-                                {idea.description}
-                            </p>
-                        </div>
 
-                        <div className="px-6 py-4 border-t border-gray-50 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900 flex items-center justify-between">
-                             <div className="flex items-center text-xs font-bold text-gray-900 dark:text-gray-200">
-                                <span className="text-gray-400 dark:text-slate-500 mr-1 font-normal">Budget:</span> {idea.budget}
+                            <div className="px-6 py-4 border-t border-gray-50 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900 flex items-center justify-between">
+                                <div className="flex items-center text-xs font-bold text-gray-900 dark:text-gray-200">
+                                    <span className="text-gray-400 dark:text-slate-500 mr-1 font-normal">Budget:</span> {idea.budget}
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center border border-gray-100 dark:border-slate-700 group-hover:bg-indigo-600 group-hover:border-indigo-600 transition-colors">
+                                    <ArrowRight className="w-4 h-4 text-gray-300 dark:text-slate-500 group-hover:text-white transition-colors" />
+                                </div>
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center border border-gray-100 dark:border-slate-700 group-hover:bg-indigo-600 group-hover:border-indigo-600 transition-colors">
-                                <ArrowRight className="w-4 h-4 text-gray-300 dark:text-slate-500 group-hover:text-white transition-colors" />
-                            </div>
-                        </div>
-                    </Link>
+                        </Link>
+                    </div>
                   );
                 })}
             </div>
